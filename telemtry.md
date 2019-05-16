@@ -48,7 +48,7 @@ class MoveStatus(DeviceStatus):
 
     def _finished(self):
         ...
-        record_telemetry({'dt': dt, 'configuration': configuration, 'action': {'initial': self.initial, 'target': self.target}})
+        record_telemetry({'dt': dt, 'configuration': configuration, 'action': {'initial': self.start_pos, 'target': self.target}})
 ```
 
 In order to capture the context necessary to interpret a given timing (velocity, exposure time, etc.) we need to capture configuration that will be specific to a given device. Therefore we will add `EpicsMotorStatus` and `ADStatus` that get the signals that they need.
