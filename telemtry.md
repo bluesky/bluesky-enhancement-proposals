@@ -10,6 +10,36 @@ This will enable future work on *time estimation* for bluesky plans. It is a nec
 
 - ophyd
 
+## Timing Sequence
+
+Here are the actions that require network activity:
+
+1. Request is sent to begin action (moving setpoint, starting acquisition, ...).
+2. Response is received indicating that action has completed.
+3. Additional readings are taken of Device Components needed to interpret
+   telemetry (velocity, exposure time, ...).
+4. The payload of telemetry information is inserted into one or more database.
+
+When in this sequence should the "clock" start and stop?
+
+From the point of view of profiling hardware performance of time, we wish to
+isolate 1--2. Thus, if we later expand the amount of extra information collected
+in (3) it will not distort our measurement of the hardware's action itself.
+
+But from the point of view of producing accurate time estimations in bluesky,
+the duration of the entire procedure is of interest. Of course we cannot measure
+(4) because it is only known after the payload has been inserted. But we might
+be interested in including (3) if in practice it can be used to significantly
+improve accuracy of time estimations.
+
+We propose to include three times:
+
+* ``start_time`` --- UNIX epoch time taken before (1)
+* ``command_time`` --- difference in seconds between a time taken after (2) and
+  the ``start_time``
+* ``overhead`` --- difference in seconds between a time taken after (3) and the
+  time taken after (2)
+
 ## Proposed Design
 
 Key aspects
