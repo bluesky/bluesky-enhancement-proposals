@@ -40,6 +40,15 @@ We propose to include three times:
 * ``telemetry_overhead`` --- difference in seconds between a time taken after (3) and the
   time taken after (2)
 
+## Proposed payload for database
+payload = {'device_name': 'name of device',
+           'command': 'name of command ('set', 'trigger', ...),
+           'start_time': 'time the command was started',
+           'command_dt': 'time taken to complete the command',
+           'telemetry_overhead_dt': 'time taken to read device components and status attributes to be recorded',
+           'device_components':{'component_name': value for each component in status.device_components},
+           'status_attributes':{'attribute': value for each attribute in status.status_attributes}}
+
 ## Proposed Design
 
 Key aspects
