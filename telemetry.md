@@ -37,7 +37,7 @@ We propose to include three times:
 * ``start_time`` --- UNIX epoch time taken before (1)
 * ``command_time`` --- difference in seconds between a time taken after (2) and
   the ``start_time``
-* ``overhead`` --- difference in seconds between a time taken after (3) and the
+* ``telemetry_overhead`` --- difference in seconds between a time taken after (3) and the
   time taken after (2)
 
 ## Proposed Design
