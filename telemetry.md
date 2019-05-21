@@ -35,9 +35,9 @@ improve accuracy of time estimations.
 We propose to include three times:
 
 * ``start_time`` --- UNIX epoch time taken before (1)
-* ``command_time`` --- difference in seconds between a time taken after (2) and
+* ``command_dt`` --- difference in seconds between a time taken after (2) and
   the ``start_time``
-* ``telemetry_overhead`` --- difference in seconds between a time taken after (3) and the
+* ``telemetry_overhead_dt`` --- difference in seconds between a time taken after (3) and the
   time taken after (2)
 
 ## Proposed payload for database
