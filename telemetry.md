@@ -74,23 +74,25 @@ class DeviceStatus:
         super().__init__(**kwargs)
     
     device_components = ()
-    status_attributes = ('start_time')
+    status_attributes = ()
 
     ...
   
     def _finished(self):
         if self.command:  # For backwards compatibility
-            configuration = {'device_name': self.device.name,
-                             'command': status.command, 
-                             'device_components':{},
-                             'status_attributes':{}}
-            telemetry_dict = {}
+            command_time = time.time()
+            payload = {'device_name': self.device.name,
+                       'command': status.command, 
+                       'device_components':{},
+                       'status_attributes':{}}
+
             for component_name in self.device_components:
-                telemetry_dict['device_components'][component_name] = getattr(self.device, component_name).get()
+                payload['device_components'][component_name] = getattr(self.device, component_name).get()
             for attribute_name in self.status_attributes:
-                telemetry_dict['status_attributes'][attribute_name] = getattr(self, attribute_name).get()
-            telemetry_dict['status_attributes']['stop_time'] = time.time()
-            record_telemetry(telemetry_dict)
+                payload['status_attributes'][attribute_name] = getattr(self, attribute_name).get()
+            payload['command_dt'] = command_time-self.start_time
+            payload['telemetry_overhead_dt'] = time.time()-command_time
+            record_telemetry(payload)
 
 class MoveStatus(DeviceStatus):
     ...
@@ -98,7 +100,7 @@ class MoveStatus(DeviceStatus):
         super().__init__(*args, **kwargs, command='set')
     
     device_components = ('settle_time')
-    status_attributes = ('start_time', 'start_pos', 'finish_pos')
+    status_attributes = ( 'start_pos', 'finish_pos')
     ...
 ```
 
@@ -110,13 +112,13 @@ In order to capture the context necessary to interpret a given timing (velocity,
 class ADTriggerStatus(DeviceStatus):
     ...
     device_components = ('cam.acquire_time', 'cam.acquire_period', 'cam.num_images', 'cam.trigger_mode', 'settle_time')
-    status_attributes = ('start_time')
+    status_attributes = ()
     ...
 
 class EpicsMotorSetStatus(Move_status):
     ...
     device_components = ('settle_time', 'velocity')
-    status_attributes = ('start_time', 'start_pos', 'finish_pos')
+    status_attributes = ('start_pos', 'finish_pos')
     ...
 ```
 
@@ -128,34 +130,6 @@ class EpicsMotorSetStatus(Move_status):
 - Make `'telemetry'` another `kind`. Rejected for the same reason as above, and also because it would make `kind` more complex.
 - Add a separate `ETA` or `Telemetry` object to store this information, passed into `OphydObj`. This is the approach that we decided on in the initial pass at this feature, but it’s not needed for *telemetry* specifically (maybe later for time estimation) and can be added later. Thus, rejected as out of scope for this proposal.
 
-## Open Questions
-- Exact structure of telemetry payload
-
-    - #NOTE Just to help with the discussion of the structure of ‘telemetry payload’  I include here below what was used in the previous PR on this and why, it is open for discussion. Also I made use of ‘named tuples’ instead of the dictionary entries below (just as a discussion point).
-    ```
-    # Bare minimum information required for each entry to be useful for estimating time.
-    {'object_name': self.device.name,  # required for retrieving specific device entries
-      'action': 'set' or 'trigger' or ...,  # required for retrieving specific action entries
-      'estimation': {'time': 3.0, 'std_dev': nan},  # required for comparison to time taken
-      'time': {'start': 1557859442.3674903, 'stop': 1557859442.3676653}}  # required to see
-      # how telemetry varies over time, and to calculate the time taken.
-    
-    # Additional values required for estimating time for 'set' on a generic 'settable' device
-     {'position': {'start': status_obj.initial, 'stop': status_obj.target},
-      'settle_time': {'setpoint': status_obj.pos.cam.settle_time}}
-    
-    # Additional values required for estimating time for 'set' on an EpicsMotor device
-    {'position': {'start': status_obj.initial, 'stop': status_obj.target},
-     'settle_time': {'setpoint': status_obj.pos.settle_time}, 
-     'velocity': {'setpoint': status_obj.pos.velocity}}  
-    
-    # Additional values required for estimating time for 'trigger' on an AreaDetector device
-    {'trigger_mode': {'setpoint': status_obj.device.cam.trigger_mode},
-     'num_images': {'setpoint': status_obj.device.cam.num_images},
-     'settle_time': {'setpoint': status_obj.device.cam.settle_time},
-     'acquire_period': {'setpoint': status_obj.device.cam.acquire_period},
-     'acquire_time': {'setpoint': status_obj.device.cam.acquire_time}}
-    ```
 ## Links to documents from prior rounds of discussion on this feature
 - https://www.dropbox.com/s/ch7j1x6j4njby7e/ETA%20overview.docx?dl=0
 - [+Outline of ETA co-routine.](https://paper.dropbox.com/doc/Outline-of-ETA-co-routine.-R9emFtWxa0bYjXUYzywno) 
