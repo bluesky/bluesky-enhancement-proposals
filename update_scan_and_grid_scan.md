@@ -109,7 +109,7 @@ The main benefits I see are:
 
 ## Posible extensions
 In principle this could also be extended to the other non-adaptive scans (like
-``spiral``, ``fermat_spiral``, ``square_spiral``, etc) and ``count``. I am less
+``spiral``, ``fermat_spiral``, ``square_spiral``, etc). I am less
 convinced about the benefits of this, as it would require rewriting the
 `plan_patterns` for these to return ``motor, pos_list`` argument pairs instead
 of cyclers.
