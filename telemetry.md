@@ -91,7 +91,7 @@ class DeviceStatus:
         if self.command:  # For backwards compatibility
             command_time = time.time()
             payload = {'device_name': self.device.name,
-                       'command': status.command, 
+                       'command': self.command, 
                        'device_components':{},
                        'status_attributes':{}}
 
